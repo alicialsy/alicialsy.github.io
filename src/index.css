@@ -92,9 +92,21 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent iOS bounce / overscroll in WeChat */
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Noto Sans SC', system-ui, sans-serif;
+    /* Safe area for notched devices */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* Prevent pull-to-refresh in WeChat */
+    overscroll-behavior-y: contain;
+    /* Disable tap highlight */
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
