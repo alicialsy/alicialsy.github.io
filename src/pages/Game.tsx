@@ -1,21 +1,37 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Identity, questions } from "@/data/gameData";
 import AvatarTrack from "@/components/AvatarTrack";
 import QuestionCard from "@/components/QuestionCard";
+import { updateParticipantPosition, subscribeToSession } from "@/lib/gameService";
 
 const Game = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const identity = location.state?.identity as Identity | undefined;
+  const sessionId = location.state?.sessionId as string | undefined;
+  const participantId = location.state?.participantId as string | undefined;
 
   const [currentQ, setCurrentQ] = useState(0);
   const [position, setPosition] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [animating, setAnimating] = useState(false);
 
+  // Subscribe to session changes (instructor can control question flow)
+  useEffect(() => {
+    if (!sessionId) return;
+    const unsub = subscribeToSession(sessionId, (session) => {
+      if (session.status === "finished") {
+        navigate("/result", {
+          state: { identity, position, answers },
+        });
+      }
+    });
+    return unsub;
+  }, [sessionId, identity, position, answers, navigate]);
+
   const handleAnswer = useCallback(
-    (canDo: boolean) => {
+    async (canDo: boolean) => {
       if (animating || !identity) return;
       setAnimating(true);
       const newAnswers = [...answers, canDo];
@@ -26,18 +42,23 @@ const Game = () => {
         setPosition(newPos);
       }
 
+      // Sync to database
+      if (participantId) {
+        await updateParticipantPosition(participantId, newPos);
+      }
+
       setTimeout(() => {
         if (currentQ < questions.length - 1) {
           setCurrentQ((q) => q + 1);
         } else {
           navigate("/result", {
-            state: { identity, position: newPos, answers: newAnswers },
+            state: { identity, position: newPos, answers: newAnswers, sessionId },
           });
         }
         setAnimating(false);
       }, 700);
     },
-    [animating, answers, currentQ, identity, navigate, position]
+    [animating, answers, currentQ, identity, navigate, position, participantId]
   );
 
   if (!identity) {
