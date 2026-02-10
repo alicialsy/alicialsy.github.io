@@ -49,6 +49,7 @@ export type Database = {
           identity_emoji: string
           identity_id: string
           identity_name: string
+          participant_token: string
           position: number
           session_id: string
         }
@@ -59,6 +60,7 @@ export type Database = {
           identity_emoji: string
           identity_id: string
           identity_name: string
+          participant_token?: string
           position?: number
           session_id: string
         }
@@ -69,6 +71,7 @@ export type Database = {
           identity_emoji?: string
           identity_id?: string
           identity_name?: string
+          participant_token?: string
           position?: number
           session_id?: string
         }
@@ -115,6 +118,54 @@ export type Database = {
         }
         Relationships: []
       }
+      participants_public: {
+        Row: {
+          created_at: string | null
+          current_question: number | null
+          id: string | null
+          identity_emoji: string | null
+          identity_id: string | null
+          identity_name: string | null
+          position: number | null
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_question?: number | null
+          id?: string | null
+          identity_emoji?: string | null
+          identity_id?: string | null
+          identity_name?: string | null
+          position?: number | null
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_question?: number | null
+          id?: string | null
+          identity_emoji?: string | null
+          identity_id?: string | null
+          identity_name?: string | null
+          position?: number | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       create_game_session: {
@@ -124,6 +175,26 @@ export type Database = {
           room_code: string
           session_id: string
         }[]
+      }
+      join_game_session: {
+        Args: {
+          p_identity_emoji: string
+          p_identity_id: string
+          p_identity_name: string
+          p_session_id: string
+        }
+        Returns: {
+          participant_id: string
+          participant_token: string
+        }[]
+      }
+      update_participant_position: {
+        Args: {
+          p_participant_id: string
+          p_participant_token: string
+          p_position: number
+        }
+        Returns: boolean
       }
       update_session_status: {
         Args: {

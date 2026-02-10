@@ -29,12 +29,12 @@ export async function createSession(): Promise<{ sessionId: string; roomCode: st
 export async function joinSession(roomCode: string): Promise<{
   sessionId: string;
   participantId: string;
+  participantToken: string;
   identityName: string;
   identityEmoji: string;
   identityId: string;
 } | null> {
-  // Find session
-  // Use the public view (no creator_token exposed)
+  // Find session via public view
   const { data: session, error: sessionError } = await supabase
     .from("game_sessions_public")
     .select("id, status")
@@ -49,37 +49,36 @@ export async function joinSession(roomCode: string): Promise<{
   // Assign random identity
   const identity = getRandomIdentity();
 
-  // Create participant
-  const { data: participant, error: participantError } = await supabase
-    .from("participants")
-    .insert({
-      session_id: session.id,
-      identity_id: identity.id,
-      identity_name: identity.name,
-      identity_emoji: identity.emoji,
-    })
-    .select("id")
-    .single();
+  // Create participant via secure RPC (returns token)
+  const { data, error } = await supabase.rpc("join_game_session", {
+    p_session_id: session.id,
+    p_identity_id: identity.id,
+    p_identity_name: identity.name,
+    p_identity_emoji: identity.emoji,
+  });
 
-  if (participantError || !participant) {
-    console.error("Failed to join session:", participantError);
+  if (error || !data || data.length === 0) {
+    console.error("Failed to join session:", error);
     return null;
   }
 
   return {
     sessionId: session.id,
-    participantId: participant.id,
+    participantId: data[0].participant_id,
+    participantToken: data[0].participant_token,
     identityName: identity.name,
     identityEmoji: identity.emoji,
     identityId: identity.id,
   };
 }
 
-export async function updateParticipantPosition(participantId: string, position: number) {
-  await supabase
-    .from("participants")
-    .update({ position })
-    .eq("id", participantId);
+export async function updateParticipantPosition(participantId: string, participantToken: string, position: number) {
+  const { error } = await supabase.rpc("update_participant_position", {
+    p_participant_id: participantId,
+    p_participant_token: participantToken,
+    p_position: position,
+  });
+  if (error) console.error("Failed to update position:", error);
 }
 
 export async function updateSessionStatus(sessionId: string, creatorToken: string, status: string, currentQuestion?: number) {
@@ -109,7 +108,7 @@ export function subscribeToParticipants(
   // Initial fetch
   const fetchAll = async () => {
     const { data } = await supabase
-      .from("participants")
+      .from("participants_public")
       .select("*")
       .eq("session_id", sessionId);
     if (data) callback(data);

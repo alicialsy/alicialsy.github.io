@@ -15,6 +15,7 @@ const Index = () => {
   const [sessionData, setSessionData] = useState<{
     sessionId: string;
     participantId: string;
+    participantToken: string;
   } | null>(null);
 
   const handleJoinRoom = async () => {
@@ -29,7 +30,7 @@ const Index = () => {
       return;
     }
 
-    setSessionData({ sessionId: result.sessionId, participantId: result.participantId });
+    setSessionData({ sessionId: result.sessionId, participantId: result.participantId, participantToken: result.participantToken });
 
     // Find full identity
     const fullIdentity = identities.find((i) => i.id === result.identityId) || {
@@ -79,6 +80,7 @@ const Index = () => {
           identity,
           sessionId: sessionData?.sessionId || null,
           participantId: sessionData?.participantId || null,
+          participantToken: sessionData?.participantToken || null,
         },
       });
     }
