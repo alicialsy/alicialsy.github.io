@@ -5,7 +5,7 @@ import { joinSession } from "@/lib/gameService";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"home" | "join" | "reveal">("home");
+  const [mode, setMode] = useState<"home" | "join" | "solo" | "reveal">("home");
   const [roomCode, setRoomCode] = useState("");
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
@@ -56,13 +56,29 @@ const Index = () => {
     }, 120);
   };
 
+  const handleSoloStart = () => {
+    setMode("reveal");
+    setIsRevealing(true);
+    const finalIdentity = getRandomIdentity();
+    let count = 0;
+    const interval = setInterval(() => {
+      setIdentity(getRandomIdentity());
+      count++;
+      if (count > 8) {
+        clearInterval(interval);
+        setIdentity(finalIdentity);
+        setRevealed(true);
+      }
+    }, 120);
+  };
+
   const handleStart = () => {
-    if (identity && sessionData) {
+    if (identity) {
       navigate("/game", {
         state: {
           identity,
-          sessionId: sessionData.sessionId,
-          participantId: sessionData.participantId,
+          sessionId: sessionData?.sessionId || null,
+          participantId: sessionData?.participantId || null,
         },
       });
     }
@@ -91,10 +107,21 @@ const Index = () => {
               回答接下来的 10 个问题。
             </p>
             <button
-              onClick={() => setMode("join")}
+              onClick={handleSoloStart}
               className="w-full rounded-xl bg-rc-red px-10 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 active:scale-95 pulse-glow"
             >
-              加入房间
+              开始体验
+            </button>
+            <div className="flex items-center gap-4 w-full">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">或</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <button
+              onClick={() => setMode("join")}
+              className="w-full rounded-xl border-2 border-border bg-card px-10 py-4 text-lg font-semibold text-foreground shadow transition-all hover:bg-muted active:scale-95"
+            >
+              输入房间码加入
             </button>
             <button
               onClick={() => navigate("/instructor")}
