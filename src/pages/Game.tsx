@@ -11,6 +11,7 @@ const Game = () => {
   const identity = location.state?.identity as Identity | undefined;
   const sessionId = location.state?.sessionId as string | undefined;
   const participantId = location.state?.participantId as string | undefined;
+  const participantToken = location.state?.participantToken as string | undefined;
 
   const [currentQ, setCurrentQ] = useState(0);
   const [position, setPosition] = useState(0);
@@ -43,8 +44,8 @@ const Game = () => {
       }
 
       // Sync to database
-      if (participantId) {
-        await updateParticipantPosition(participantId, newPos);
+      if (participantId && participantToken) {
+        await updateParticipantPosition(participantId, participantToken, newPos);
       }
 
       setTimeout(() => {
