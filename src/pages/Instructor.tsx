@@ -11,6 +11,7 @@ import {
 const Instructor = () => {
   const navigate = useNavigate();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [creatorToken, setCreatorToken] = useState<string>("");
   const [roomCode, setRoomCode] = useState<string>("");
   const [participants, setParticipants] = useState<ParticipantData[]>([]);
   const [creating, setCreating] = useState(false);
@@ -21,6 +22,7 @@ const Instructor = () => {
     if (result) {
       setSessionId(result.sessionId);
       setRoomCode(result.roomCode);
+      setCreatorToken(result.creatorToken);
     }
     setCreating(false);
   }, []);
@@ -35,8 +37,8 @@ const Instructor = () => {
   }, [sessionId]);
 
   const handleEndGame = async () => {
-    if (sessionId) {
-      await updateSessionStatus(sessionId, "finished");
+    if (sessionId && creatorToken) {
+      await updateSessionStatus(sessionId, creatorToken, "finished");
     }
   };
 

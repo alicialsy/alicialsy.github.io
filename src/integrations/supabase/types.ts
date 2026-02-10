@@ -17,6 +17,7 @@ export type Database = {
       game_sessions: {
         Row: {
           created_at: string
+          creator_token: string
           current_question: number
           id: string
           room_code: string
@@ -24,6 +25,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          creator_token?: string
           current_question?: number
           id?: string
           room_code: string
@@ -31,6 +33,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          creator_token?: string
           current_question?: number
           id?: string
           room_code?: string
@@ -84,7 +87,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_session_status: {
+        Args: {
+          p_creator_token: string
+          p_current_question?: number
+          p_session_id: string
+          p_status: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
