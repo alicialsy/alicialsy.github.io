@@ -11,19 +11,19 @@ function generateRoomCode(): string {
   return code;
 }
 
-export async function createSession(): Promise<{ sessionId: string; roomCode: string } | null> {
+export async function createSession(): Promise<{ sessionId: string; roomCode: string; creatorToken: string } | null> {
   const roomCode = generateRoomCode();
   const { data, error } = await supabase
     .from("game_sessions")
     .insert({ room_code: roomCode })
-    .select("id, room_code")
+    .select("id, room_code, creator_token")
     .single();
 
   if (error) {
     console.error("Failed to create session:", error);
     return null;
   }
-  return { sessionId: data.id, roomCode: data.room_code };
+  return { sessionId: data.id, roomCode: data.room_code, creatorToken: data.creator_token };
 }
 
 export async function joinSession(roomCode: string): Promise<{
@@ -81,13 +81,15 @@ export async function updateParticipantPosition(participantId: string, position:
     .eq("id", participantId);
 }
 
-export async function updateSessionStatus(sessionId: string, status: string, currentQuestion?: number) {
-  const update: Record<string, unknown> = { status };
-  if (currentQuestion !== undefined) update.current_question = currentQuestion;
-  await supabase
-    .from("game_sessions")
-    .update(update)
-    .eq("id", sessionId);
+export async function updateSessionStatus(sessionId: string, creatorToken: string, status: string, currentQuestion?: number) {
+  const { data, error } = await supabase.rpc("update_session_status", {
+    p_session_id: sessionId,
+    p_creator_token: creatorToken,
+    p_status: status,
+    p_current_question: currentQuestion ?? null,
+  });
+  if (error) console.error("Failed to update session:", error);
+  return data;
 }
 
 export interface ParticipantData {
