@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Identity, questions } from "@/data/gameData";
 
@@ -10,8 +11,15 @@ const Result = () => {
     answers?: boolean[];
   };
 
-  if (!identity || position === undefined || !answers) {
-    navigate("/");
+  const missingData = !identity || position === undefined || !answers;
+
+  useEffect(() => {
+    if (missingData) {
+      navigate("/", { replace: true });
+    }
+  }, [missingData, navigate]);
+
+  if (missingData) {
     return null;
   }
 
