@@ -13,17 +13,17 @@ function generateRoomCode(): string {
 
 export async function createSession(): Promise<{ sessionId: string; roomCode: string; creatorToken: string } | null> {
   const roomCode = generateRoomCode();
-  const { data, error } = await supabase
-    .from("game_sessions")
-    .insert({ room_code: roomCode })
-    .select("id, room_code, creator_token")
-    .single();
+  // Use SECURITY DEFINER function so creator_token is never exposed via SELECT
+  const { data, error } = await supabase.rpc("create_game_session", {
+    p_room_code: roomCode,
+  });
 
-  if (error) {
+  if (error || !data || data.length === 0) {
     console.error("Failed to create session:", error);
     return null;
   }
-  return { sessionId: data.id, roomCode: data.room_code, creatorToken: data.creator_token };
+  const row = data[0];
+  return { sessionId: row.session_id, roomCode: row.room_code, creatorToken: row.creator_token };
 }
 
 export async function joinSession(roomCode: string): Promise<{
@@ -34,8 +34,9 @@ export async function joinSession(roomCode: string): Promise<{
   identityId: string;
 } | null> {
   // Find session
+  // Use the public view (no creator_token exposed)
   const { data: session, error: sessionError } = await supabase
-    .from("game_sessions")
+    .from("game_sessions_public")
     .select("id, status")
     .eq("room_code", roomCode.toUpperCase())
     .single();

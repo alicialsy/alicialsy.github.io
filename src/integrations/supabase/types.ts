@@ -80,13 +80,51 @@ export type Database = {
             referencedRelation: "game_sessions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      game_sessions_public: {
+        Row: {
+          created_at: string | null
+          current_question: number | null
+          id: string | null
+          room_code: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_question?: number | null
+          id?: string | null
+          room_code?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_question?: number | null
+          id?: string | null
+          room_code?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      create_game_session: {
+        Args: { p_room_code: string }
+        Returns: {
+          creator_token: string
+          room_code: string
+          session_id: string
+        }[]
+      }
       update_session_status: {
         Args: {
           p_creator_token: string
