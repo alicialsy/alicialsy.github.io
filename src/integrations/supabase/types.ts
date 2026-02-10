@@ -14,7 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_sessions: {
+        Row: {
+          created_at: string
+          current_question: number
+          id: string
+          room_code: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          current_question?: number
+          id?: string
+          room_code: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          current_question?: number
+          id?: string
+          room_code?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      participants: {
+        Row: {
+          created_at: string
+          current_question: number
+          id: string
+          identity_emoji: string
+          identity_id: string
+          identity_name: string
+          position: number
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_question?: number
+          id?: string
+          identity_emoji: string
+          identity_id: string
+          identity_name: string
+          position?: number
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          current_question?: number
+          id?: string
+          identity_emoji?: string
+          identity_id?: string
+          identity_name?: string
+          position?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
