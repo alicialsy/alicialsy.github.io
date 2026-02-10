@@ -61,8 +61,13 @@ const Game = () => {
     [animating, answers, currentQ, identity, navigate, position, participantId]
   );
 
+  useEffect(() => {
+    if (!identity) {
+      navigate("/", { replace: true });
+    }
+  }, [identity, navigate]);
+
   if (!identity) {
-    navigate("/");
     return null;
   }
 
