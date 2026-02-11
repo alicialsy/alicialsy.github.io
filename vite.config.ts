@@ -7,10 +7,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 8080,
+    host: "::",
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom"],
   },
 });
