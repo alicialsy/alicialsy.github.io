@@ -21,7 +21,7 @@ const QuestionCard = ({ question, questionNumber, onAnswer, animating }: Questio
         </div>
 
         <p className="text-center text-sm text-muted-foreground mb-6">
-          以你的角色身份，你觉得自己能做到吗？
+          以你的角色身份，你觉得自己能做到吗？请以你对该群体现实处境的理解作答，而非理想情况
         </p>
 
         <div className="flex gap-4">
