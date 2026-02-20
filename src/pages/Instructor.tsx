@@ -143,9 +143,9 @@ const Instructor = () => {
                 <div className="space-y-4">
                   {participants.map((p) => (
                     <div key={p.id} className="flex items-center gap-4">
-                      <div className="flex w-36 items-center gap-2 shrink-0">
+                      <div className="flex w-44 items-center gap-2 shrink-0">
                         <span className="text-2xl">{p.identity_emoji}</span>
-                        <span className="text-sm font-medium text-foreground truncate">
+                        <span className="text-sm font-medium text-foreground leading-tight break-keep">
                           {p.identity_name}
                         </span>
                       </div>
