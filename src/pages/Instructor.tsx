@@ -119,7 +119,7 @@ const Instructor = () => {
             ) : (
               <div className="rounded-2xl bg-card border border-border p-8 shadow-sm">
                 {/* Scale header */}
-                <div className="mb-2 flex justify-between px-36">
+                <div className="mb-2 flex justify-between" style={{ paddingLeft: 'calc(11rem + 1rem)', paddingRight: '0' }}>
                   {Array.from({ length: 11 }, (_, i) => (
                     <span key={i} className="w-8 text-center text-sm font-semibold text-muted-foreground">
                       {i}
@@ -128,7 +128,7 @@ const Instructor = () => {
                 </div>
 
                 {/* Scale line */}
-                <div className="relative mx-36 mb-8">
+                <div className="relative mb-8" style={{ marginLeft: 'calc(11rem + 1rem)', marginRight: '0' }}>
                   <div className="h-1 w-full rounded-full bg-muted" />
                   <div className="absolute top-0 left-0 right-0 flex justify-between">
                     {Array.from({ length: 11 }, (_, i) => (
