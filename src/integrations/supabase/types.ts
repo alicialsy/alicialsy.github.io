@@ -184,6 +184,9 @@ export type Database = {
           p_session_id: string
         }
         Returns: {
+          assigned_identity_emoji: string
+          assigned_identity_id: string
+          assigned_identity_name: string
           participant_id: string
           participant_token: string
         }[]

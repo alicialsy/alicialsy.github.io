@@ -39,17 +39,30 @@ export async function joinSession(roomCode: string): Promise<{
     .from("game_sessions_public")
     .select("id, status")
     .eq("room_code", roomCode.toUpperCase())
-    .single();
+    .maybeSingle();
 
   if (sessionError || !session) {
     console.error("Session not found:", sessionError);
     return null;
   }
 
-  // Assign random identity
-  const identity = getRandomIdentity();
+  // Fetch existing participants to avoid duplicate identities
+  const { data: existing } = await supabase
+    .from("participants_public")
+    .select("identity_id")
+    .eq("session_id", session.id);
 
-  // Create participant via secure RPC (returns token)
+  const takenIds = new Set((existing || []).map((p) => p.identity_id));
+  const { identities } = await import("@/data/gameData");
+  const available = identities.filter((i) => !takenIds.has(i.id));
+
+  // Pick from available, or fallback to random if all taken
+  const identity =
+    available.length > 0
+      ? available[Math.floor(Math.random() * available.length)]
+      : getRandomIdentity();
+
+  // Create participant via secure RPC
   const { data, error } = await supabase.rpc("join_game_session", {
     p_session_id: session.id,
     p_identity_id: identity.id,
@@ -66,9 +79,9 @@ export async function joinSession(roomCode: string): Promise<{
     sessionId: session.id,
     participantId: data[0].participant_id,
     participantToken: data[0].participant_token,
-    identityName: identity.name,
-    identityEmoji: identity.emoji,
-    identityId: identity.id,
+    identityName: data[0].assigned_identity_name || identity.name,
+    identityEmoji: data[0].assigned_identity_emoji || identity.emoji,
+    identityId: data[0].assigned_identity_id || identity.id,
   };
 }
 
