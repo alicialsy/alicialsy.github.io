@@ -56,11 +56,22 @@ export async function joinSession(roomCode: string): Promise<{
   const { identities } = await import("@/data/gameData");
   const available = identities.filter((i) => !takenIds.has(i.id));
 
-  // Pick from available, or fallback to random if all taken
-  const identity =
-    available.length > 0
-      ? available[Math.floor(Math.random() * available.length)]
-      : getRandomIdentity();
+  // Privileged roles that should appear at least once per room
+  const privilegedIds = new Set(["village-head", "retired-teacher", "shop-owner"]);
+  const hasPrivileged = [...takenIds].some((id) => privilegedIds.has(id as string));
+
+  let identity;
+  if (available.length === 0) {
+    identity = getRandomIdentity();
+  } else if (!hasPrivileged) {
+    // First player(s) must get a privileged role if none assigned yet
+    const privilegedAvailable = available.filter((i) => privilegedIds.has(i.id));
+    identity = privilegedAvailable.length > 0
+      ? privilegedAvailable[Math.floor(Math.random() * privilegedAvailable.length)]
+      : available[Math.floor(Math.random() * available.length)];
+  } else {
+    identity = available[Math.floor(Math.random() * available.length)];
+  }
 
   // Create participant via secure RPC
   const { data, error } = await supabase.rpc("join_game_session", {
