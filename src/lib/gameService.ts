@@ -58,16 +58,27 @@ export async function joinSession(roomCode: string): Promise<{
 
   // Privileged roles that should appear at least once per room
   const privilegedIds = new Set(["village-head", "retired-teacher", "shop-owner"]);
+  // Vulnerable roles — second player must get one of these
+  const vulnerableIds = new Set(["single-mom", "deaf-elder", "migrant-worker", "disabled-youth", "left-behind-child", "mental-health", "local-farmer"]);
+
   const hasPrivileged = [...takenIds].some((id) => privilegedIds.has(id as string));
+  const hasVulnerable = [...takenIds].some((id) => vulnerableIds.has(id as string));
+  const playerCount = takenIds.size;
 
   let identity;
   if (available.length === 0) {
     identity = getRandomIdentity();
   } else if (!hasPrivileged) {
-    // First player(s) must get a privileged role if none assigned yet
+    // First player must get a privileged role
     const privilegedAvailable = available.filter((i) => privilegedIds.has(i.id));
     identity = privilegedAvailable.length > 0
       ? privilegedAvailable[Math.floor(Math.random() * privilegedAvailable.length)]
+      : available[Math.floor(Math.random() * available.length)];
+  } else if (playerCount === 1 || !hasVulnerable) {
+    // Second player must get a vulnerable role
+    const vulnerableAvailable = available.filter((i) => vulnerableIds.has(i.id));
+    identity = vulnerableAvailable.length > 0
+      ? vulnerableAvailable[Math.floor(Math.random() * vulnerableAvailable.length)]
       : available[Math.floor(Math.random() * available.length)];
   } else {
     identity = available[Math.floor(Math.random() * available.length)];
